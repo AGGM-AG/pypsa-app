@@ -21,17 +21,24 @@ def _check_exists(path: Path) -> None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"File not found: {path.name}")
 
 
+def _is_relative_to(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+    except ValueError:
+        return False
+    return True
+
+
 def validate_path(
     file_path: str | Path, base_dir: Path | None = None, must_exist: bool = False
 ) -> Path:
-    """Validate file path is within base directory."""
+    """Validate file path is within the base directory or a registration root."""
     base_dir = base_dir or settings.networks_path
     path = Path(file_path).resolve()
 
-    try:
-        path.relative_to(base_dir.resolve())
-    except ValueError:
-        logger.exception(
+    allowed = [base_dir.resolve(), *settings.resolved_network_roots]
+    if not any(_is_relative_to(path, root) for root in allowed):
+        logger.error(
             "Path traversal attempt detected",
             extra={
                 "file_path": str(file_path),
@@ -42,7 +49,7 @@ def validate_path(
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
             "Access denied: Path outside allowed directory",
-        ) from None
+        )
 
     if must_exist:
         _check_exists(path)

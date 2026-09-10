@@ -27,6 +27,10 @@ from pypsa_app.backend.services.statistics import get_plot as get_plot_service
 from pypsa_app.backend.services.statistics import (
     get_statistics as get_statistics_service,
 )
+from pypsa_app.backend.services.views import get_view as get_view_service
+from pypsa_app.backend.services.views import (
+    get_view_selections as get_view_selections_service,
+)
 from pypsa_app.backend.settings import settings
 from pypsa_app.backend.task_queue import task_app
 from pypsa_app.backend.utils.errors import sanitize_task_error
@@ -78,6 +82,22 @@ def get_plot_task(self: Any, **kwargs: Any) -> dict[str, Any]:
     """Background task for plot generation"""
     func = cache("plot", ttl=settings.plot_cache_ttl)(get_plot_service)
     return _execute_task(self, "Plot generation", func, **kwargs)
+
+
+@task_app.task(bind=True, name="tasks.get_view")
+def get_view_task(self: Any, **kwargs: Any) -> dict[str, Any]:
+    """Background task for view extension charts"""
+    func = cache("view", ttl=settings.plot_cache_ttl)(get_view_service)
+    return _execute_task(self, "View generation", func, **kwargs)
+
+
+@task_app.task(bind=True, name="tasks.get_view_selections")
+def get_view_selections_task(self: Any, **kwargs: Any) -> dict[str, Any]:
+    """Background task for the selections a view extension offers"""
+    func = cache("view_selections", ttl=settings.plot_cache_ttl)(
+        get_view_selections_service
+    )
+    return _execute_task(self, "View selections", func, **kwargs)
 
 
 @task_app.task(bind=True, name="tasks.get_explore")

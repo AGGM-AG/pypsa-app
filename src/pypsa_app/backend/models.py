@@ -194,6 +194,38 @@ class ApiKey(Base):
     expires_at: Mapped[datetime | None] = mapped_column(TIMESTAMP)
 
 
+class NetworkFolder(Base):
+    """A result folder registered in place: one scenario, its planning years.
+
+    The folder name is the scenario name; every ``.nc`` file below it is a
+    member :class:`Network` (``folder_id``) that stays at its original path.
+    """
+
+    __tablename__ = "network_folders"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    owner: Mapped["User"] = relationship(foreign_keys=[user_id])
+    visibility: Mapped[Visibility] = mapped_column(
+        str_enum(Visibility, "visibility"),
+        default=Visibility.PRIVATE,
+        nullable=False,
+        index=True,
+    )
+    created_at: Mapped[datetime | None] = mapped_column(
+        TIMESTAMP, server_default=func.now(), index=True
+    )
+    name: Mapped[str] = mapped_column(String(255))
+    path: Mapped[str] = mapped_column(Text, unique=True, index=True)
+
+    networks: Mapped[list["Network"]] = relationship(
+        back_populates="folder", order_by="Network.filename"
+    )
+
+
 class Network(Base):
     __tablename__ = "networks"
 
@@ -214,6 +246,14 @@ class Network(Base):
         index=True,
     )
     source_run: Mapped["Run | None"] = relationship(foreign_keys=[source_run_id])
+    # registered result folder this network is a planning year of (if any)
+    folder_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("network_folders.id", ondelete="SET NULL"),
+        index=True,
+    )
+    folder: Mapped["NetworkFolder | None"] = relationship(
+        foreign_keys=[folder_id], back_populates="networks"
+    )
 
     # Visibility
     # public (all users) or private (owner only)

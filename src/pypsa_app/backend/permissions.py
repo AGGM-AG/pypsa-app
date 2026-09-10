@@ -5,7 +5,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from pypsa_app.backend.models import Network, Permission, Run, UserRole, Visibility
+from pypsa_app.backend.models import (
+    Network,
+    NetworkFolder,
+    Permission,
+    Run,
+    UserRole,
+    Visibility,
+)
 
 if TYPE_CHECKING:
     from pypsa_app.backend.models import User
@@ -68,10 +75,15 @@ RESOURCE_PERMS: dict[type, ResourcePerms] = {
         Permission.RUNS_MODIFY,
         Permission.RUNS_MANAGE_ALL,
     ),
+    NetworkFolder: ResourcePerms(
+        Permission.NETWORKS_VIEW,
+        Permission.NETWORKS_MODIFY,
+        Permission.NETWORKS_MANAGE_ALL,
+    ),
 }
 
 
-def can_access(user: User, resource: Network | Run) -> bool:
+def can_access(user: User, resource: Network | Run | NetworkFolder) -> bool:
     """Can user view this resource? True if public, owner, or admin."""
     perms = RESOURCE_PERMS[type(resource)]
     return (
@@ -81,7 +93,7 @@ def can_access(user: User, resource: Network | Run) -> bool:
     )
 
 
-def can_modify(user: User, resource: Network | Run) -> bool:
+def can_modify(user: User, resource: Network | Run | NetworkFolder) -> bool:
     """Can user modify this resource? True if owner or admin."""
     perms = RESOURCE_PERMS[type(resource)]
     return resource.user_id == user.id or has_permission(user, perms.manage_all)

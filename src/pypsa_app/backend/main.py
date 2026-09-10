@@ -19,6 +19,7 @@ from pypsa_app.backend.api.routes import (
     api_keys,
     auth,
     cache,
+    folders,
     networks,
     networks_remote,
     plots,
@@ -27,6 +28,7 @@ from pypsa_app.backend.api.routes import (
     statistics,
     tasks,
     version,
+    views,
 )
 from pypsa_app.backend.auth import session
 from pypsa_app.backend.auth.authenticate import (
@@ -249,6 +251,8 @@ if settings.demo_mode:
             f"{API_V1_PREFIX}/plots/explore",
             f"{API_V1_PREFIX}/statistics/",
             f"{API_V1_PREFIX}/statistics",
+            f"{API_V1_PREFIX}/views/generate",
+            f"{API_V1_PREFIX}/views/selections",
         }
     )
 
@@ -333,6 +337,8 @@ app.include_router(
     prefix=f"{API_V1_PREFIX}/statistics",
     tags=["statistics"],
 )
+app.include_router(views.router, prefix=f"{API_V1_PREFIX}/views", tags=["views"])
+app.include_router(folders.router, prefix=f"{API_V1_PREFIX}/folders", tags=["folders"])
 app.include_router(cache.router, prefix=f"{API_V1_PREFIX}/cache", tags=["cache"])
 app.include_router(version.router, prefix=f"{API_V1_PREFIX}/version", tags=["version"])
 app.include_router(tasks.router, prefix=f"{API_V1_PREFIX}/tasks", tags=["tasks"])

@@ -121,7 +121,42 @@ class Settings(BaseSettings):
         """True if any auth provider is active."""
         return self.auth_oauth_enabled or self.auth_password_enabled
 
+    # Extensions
+    extensions: str = Field(
+        default="",
+        description=(
+            "Comma-separated import names of view extensions "
+            "(e.g. pypsa_at_views.app). Empty discovers the installed packages "
+            "that register the 'pypsa_app.views' entry point group."
+        ),
+        json_schema_extra={"category": "Extensions"},
+    )
+
+    @property
+    def resolved_extensions(self) -> list[str]:
+        """Parse EXTENSIONS into a list of import names."""
+        return [e.strip() for e in self.extensions.split(",") if e.strip()]
+
     # Networks
+    network_roots: str = Field(
+        default="",
+        description=(
+            "Comma-separated absolute directories below which result folders may "
+            "be registered in place (POST /folders/register), e.g. "
+            "/data/results. Empty disables in-place registration."
+        ),
+        json_schema_extra={"category": "Networks"},
+    )
+
+    @property
+    def resolved_network_roots(self) -> list[Path]:
+        """Parse NETWORK_ROOTS into resolved directories."""
+        return [
+            Path(r.strip()).resolve()
+            for r in self.network_roots.split(",")
+            if r.strip()
+        ]
+
     max_upload_size_mb: int = Field(
         default=2000,
         description="Maximum network file upload size in megabytes",
