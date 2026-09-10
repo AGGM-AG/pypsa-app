@@ -1,11 +1,13 @@
 """Routes of the view extensions (package-provided charts)"""
 
 import logging
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy.orm import Session
 
 from pypsa_app.backend.api.deps import get_db, get_networks, require_permission
+from pypsa_app.backend.api.routes.folders import get_folder
 from pypsa_app.backend.api.utils.task_utils import queue_task
 from pypsa_app.backend.models import Permission, User
 from pypsa_app.backend.ratelimit import limiter
@@ -21,6 +23,21 @@ from pypsa_app.backend.tasks import get_view_selections_task, get_view_task
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+
+def _file_paths(
+    db: Session, user: User, network_ids: list[str], folder_id: str | None
+) -> list[str]:
+    """Resolve the request's networks: a registered folder or explicit ids."""
+    if folder_id:
+        try:
+            folder = get_folder(db, UUID(folder_id), user)
+        except ValueError as exc:
+            raise HTTPException(404, "Folder not found") from exc
+        return [net.file_path for net in folder.networks]
+    if not network_ids:
+        raise HTTPException(422, "Pass network_ids or folder_id")
+    return [net.file_path for net in get_networks(db, network_ids, user)]
 
 
 @router.get("/", response_model=ViewListResponse)
@@ -46,8 +63,7 @@ def generate_view(
     """Render one view chart for a set of networks (one scenario, its years)"""
     if body.view not in get_view_specs():
         raise HTTPException(400, f"Unknown view '{body.view}'")
-    networks = get_networks(db, body.network_ids, user)
-    file_paths = [net.file_path for net in networks]
+    file_paths = _file_paths(db, user, body.network_ids, body.folder_id)
 
     return queue_task(
         get_view_task,
@@ -69,8 +85,7 @@ def view_selections(
     """What a set of networks can be rendered for (locations, years, ...)"""
     if body.extension not in get_extensions():
         raise HTTPException(400, f"Unknown extension '{body.extension}'")
-    networks = get_networks(db, body.network_ids, user)
-    file_paths = [net.file_path for net in networks]
+    file_paths = _file_paths(db, user, body.network_ids, body.folder_id)
 
     return queue_task(
         get_view_selections_task,

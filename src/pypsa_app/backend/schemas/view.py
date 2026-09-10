@@ -26,7 +26,11 @@ class ViewGenerateRequest(BaseModel):
     """Request schema for rendering one view chart"""
 
     network_ids: list[str] = Field(
-        ..., min_length=1, description="Networks (planning years of one scenario)"
+        default_factory=list,
+        description="Networks (planning years of one scenario); or pass folder_id",
+    )
+    folder_id: str | None = Field(
+        default=None, description="Registered folder whose networks to render"
     )
     view: str = Field(..., description="View name from GET /views")
     parameters: dict[str, Any] = Field(
@@ -38,5 +42,6 @@ class ViewGenerateRequest(BaseModel):
 class ViewSelectionsRequest(BaseModel):
     """Request schema for the selections a set of networks supports"""
 
-    network_ids: list[str] = Field(..., min_length=1)
+    network_ids: list[str] = Field(default_factory=list)
+    folder_id: str | None = None
     extension: str = Field(..., description="Extension name from GET /views")

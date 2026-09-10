@@ -138,6 +138,25 @@ class Settings(BaseSettings):
         return [e.strip() for e in self.extensions.split(",") if e.strip()]
 
     # Networks
+    network_roots: str = Field(
+        default="",
+        description=(
+            "Comma-separated absolute directories below which result folders may "
+            "be registered in place (POST /folders/register), e.g. "
+            "/data/results. Empty disables in-place registration."
+        ),
+        json_schema_extra={"category": "Networks"},
+    )
+
+    @property
+    def resolved_network_roots(self) -> list[Path]:
+        """Parse NETWORK_ROOTS into resolved directories."""
+        return [
+            Path(r.strip()).resolve()
+            for r in self.network_roots.split(",")
+            if r.strip()
+        ]
+
     max_upload_size_mb: int = Field(
         default=2000,
         description="Maximum network file upload size in megabytes",

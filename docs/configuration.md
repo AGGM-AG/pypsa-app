@@ -37,6 +37,7 @@ Environment variables for PyPSA App.
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `NETWORK_ROOTS` | Comma-separated absolute directories below which result folders may be registered in place (POST /folders/register), e.g. /data/results. Empty disables in-place registration. | `` |
 | `MAX_UPLOAD_SIZE_MB` | Maximum network file upload size in megabytes | `2000` |
 
 ## Runs

@@ -19,6 +19,7 @@ from pypsa_app.backend.api.routes import (
     api_keys,
     auth,
     cache,
+    folders,
     networks,
     networks_remote,
     plots,
@@ -337,6 +338,7 @@ app.include_router(
     tags=["statistics"],
 )
 app.include_router(views.router, prefix=f"{API_V1_PREFIX}/views", tags=["views"])
+app.include_router(folders.router, prefix=f"{API_V1_PREFIX}/folders", tags=["folders"])
 app.include_router(cache.router, prefix=f"{API_V1_PREFIX}/cache", tags=["cache"])
 app.include_router(version.router, prefix=f"{API_V1_PREFIX}/version", tags=["version"])
 app.include_router(tasks.router, prefix=f"{API_V1_PREFIX}/tasks", tags=["tasks"])
