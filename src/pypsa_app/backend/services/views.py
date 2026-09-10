@@ -98,6 +98,15 @@ def get_view_specs() -> dict[str, ViewSpec]:
     return specs
 
 
+def views_available() -> bool:
+    """Whether at least one extension with views is installed and loadable."""
+    try:
+        return bool(get_view_specs())
+    except Exception:  # noqa: BLE001
+        logger.warning("View extensions failed to load", exc_info=True)
+        return False
+
+
 def reset_extensions() -> None:
     """Forget loaded extensions (tests, settings changes)."""
     get_extensions.cache_clear()

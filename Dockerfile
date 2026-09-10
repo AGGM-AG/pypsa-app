@@ -29,6 +29,16 @@ RUN if [ -n "${SETUPTOOLS_SCM_PRETEND_VERSION_FOR_PYPSA_APP}" ]; then \
         export SETUPTOOLS_SCM_PRETEND_VERSION_FOR_PYPSA_APP="${SETUPTOOLS_SCM_PRETEND_VERSION_FOR_PYPSA_APP}"; \
     fi && uv sync --frozen --extra full --no-dev
 
+# Stage 1b: Frontend build (SvelteKit, static adapter)
+FROM node:22-slim AS frontend
+
+WORKDIR /frontend
+COPY frontend/app/package.json frontend/app/package-lock.json frontend/app/.npmrc ./
+RUN npm ci --no-audit --no-fund
+COPY frontend/app/ ./
+ENV DOCKER_BUILD=true
+RUN npm run build
+
 # Stage 2: Runtime stage (pypsa-app backend)
 FROM python:3.14-slim@sha256:d7a925f9eb9639a93e455b9f12c167569358818c0f62b51b88edbc8fcf34c421 AS backend
 
@@ -64,3 +74,15 @@ EXPOSE 8000
 
 ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["pypsa-app", "serve"]
+
+# Stage 3: Full stage (backend + built frontend + view extensions)
+FROM backend AS full
+
+ARG PYPSA_AT_VIEWS_REF=main
+USER root
+COPY --from=frontend --chown=appuser:appuser /frontend/build /app/src/pypsa_app/backend/static/app
+RUN apt-get update && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/* \
+    && uv pip install --python /app/.venv/bin/python \
+        "pypsa-at-views @ git+https://github.com/AGGM-AG/pypsa-at-views@${PYPSA_AT_VIEWS_REF}" \
+    && chown -R appuser:appuser /app/.venv

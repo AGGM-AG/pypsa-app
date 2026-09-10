@@ -49,7 +49,18 @@ API docs available at [`http://localhost:8000/docs`](http://localhost:8000/docs)
 
 ### Frontend
 
-Currently non-existent.
+The SvelteKit frontend lives in `frontend/app` (restored in this fork from upstream
+`252a6bf`; upstream is moving to React). Requires Node.js 22.x.
+
+```bash
+cd frontend/app
+npm ci
+npm run dev        # dev server on http://localhost:5173, proxied to the API
+npm run build      # writes the static app into src/pypsa_app/backend/static/app
+```
+
+The backend serves the built app at `/` when that folder exists (API routes keep
+precedence). The Docker `full` target builds it and installs the view extension.
 
 ## View Extensions
 

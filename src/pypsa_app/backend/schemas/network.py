@@ -47,6 +47,7 @@ class NetworkResponse(BaseModel):
     visibility: Visibility = Visibility.PRIVATE
     owner: UserPublicResponse
     source_run_id: UUID | None = None
+    folder_id: UUID | None = None
 
     # Model properties
     tags: list[str | dict] | None = None

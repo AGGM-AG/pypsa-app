@@ -1,0 +1,44 @@
+name: AT Views
+cards:
+- type: view
+  view: view_capacity_electricity_production
+  parameters: {location: AT}
+  x: 0
+  y: 0
+  w: 12
+  h: 7
+- type: view
+  view: view_balance_electricity
+  parameters: {location: AT}
+  x: 12
+  y: 0
+  w: 12
+  h: 7
+- type: view
+  view: view_capacity_heat_production
+  parameters: {location: AT}
+  x: 0
+  y: 7
+  w: 12
+  h: 7
+- type: view
+  view: view_balance_heat
+  parameters: {location: AT}
+  x: 12
+  y: 7
+  w: 12
+  h: 7
+- type: view
+  view: view_balance_hydrogen
+  parameters: {location: AT}
+  x: 0
+  y: 14
+  w: 12
+  h: 7
+- type: view
+  view: view_balance_methane
+  parameters: {location: AT}
+  x: 12
+  y: 14
+  w: 12
+  h: 7

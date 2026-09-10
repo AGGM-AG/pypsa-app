@@ -8,3 +8,5 @@ class VersionResponse(BaseModel):
     pypsa_version: str
     demo_mode: bool
     runs_enabled: bool
+    folders_enabled: bool = False
+    views_enabled: bool = False

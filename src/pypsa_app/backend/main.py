@@ -3,6 +3,7 @@ import contextlib
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -378,10 +379,21 @@ def health_check() -> dict:
     return health_status
 
 
-@app.get("/")
-def root() -> dict:
-    return {
-        "message": "PyPSA Web App API",
-        "version": __version__,
-        "docs": "/docs",
-    }
+# Serve the built frontend (frontend/app, `npm run build`) when present; the
+# mount comes last so the API routes above keep precedence.
+_app_dir = Path(__file__).parent / "static" / "app"
+if _app_dir.is_dir():
+    from pypsa_app.backend.spa_static_files import SPAStaticFiles
+
+    app.mount("/", SPAStaticFiles(directory=_app_dir, html=True), name="app")
+    logger.info("Serving frontend", extra={"directory": str(_app_dir)})
+else:
+
+    @app.get("/")
+    def root() -> dict:
+        return {
+            "message": "PyPSA Web App API",
+            "version": __version__,
+            "docs": "/docs",
+            "frontend": "not built (cd frontend/app && npm run build)",
+        }
