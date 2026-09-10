@@ -7,9 +7,9 @@ Environment variables for PyPSA App.
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `BASE_URL` | Publicly accessible URL of the application | `http://localhost:5173` |
-| `LOCAL_MODE` | Single-user local-dashboard deployment (the bare `pypsa-app` CLI). Enables zero-copy in-place network registration. Incompatible with any authentication. | `false` |
 | `DEMO_MODE` | Public read-only demo deployment. Disables all write endpoints, uses a shared 'demo' user. | `false` |
 | `DATA_DIR` | File storage directory to store application data and network files | `PydanticUndefined` |
+| `CORS_ORIGINS` | Comma-separated list of allowed CORS origins for the separate frontend | `http://localhost:5173,http://localhost:5174` |
 
 ## Database
 
@@ -26,6 +26,12 @@ Environment variables for PyPSA App.
 | `AUTH_PASSWORD_ENABLED` | Enable password based login | `false` |
 | `SESSION_SECRET_KEY` | Secret key for session cookies (generate with: openssl rand -base64 32) | `dev-secret-key-change-in-production` |
 | `SESSION_TTL` | Session time-to-live in seconds (default: 7 days) | `604800` |
+
+## Extensions
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `EXTENSIONS` | Comma-separated import names of view extensions (e.g. pypsa_at_views.app). Empty discovers the installed packages that register the 'pypsa_app.views' entry point group. | `` |
 
 ## Networks
 
@@ -55,7 +61,7 @@ Environment variables for PyPSA App.
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `RATELIMIT_ENABLED` | Enable per route rate limiting. Auto on when LOCAL_MODE is off. | - |
+| `RATELIMIT_ENABLED` | Enable per route rate limiting. Enabled by default. | - |
 | `RATELIMIT_DEFAULT` | Default per key rate limit applied to all routes | `120/minute` |
 | `RATELIMIT_LOGIN` | Rate limit for POST /auth/login/password | `5/minute;20/hour` |
 | `RATELIMIT_EXPENSIVE` | Rate limit for task queueing routes (plots, statistics). | `60/minute;600/hour` |
@@ -71,10 +77,3 @@ Environment variables for PyPSA App.
 | `SMTP_PASSWORD` | SMTP authentication password | - |
 | `SMTP_USE_TLS` | Use TLS/STARTTLS for SMTP connection | `true` |
 | `SMTP_FROM_ADDRESS` | Sender email address for notifications | `noreply@pypsa-app.local` |
-
-## Development
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `BACKEND_ONLY` | Run backend only without serving the frontend | `false` |
-| `CORS_ORIGINS` | Comma-separated list of allowed CORS origins (only used in backend-only mode) | `http://localhost:5173,http://localhost:5174` |

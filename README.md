@@ -51,6 +51,16 @@ API docs available at [`http://localhost:8000/docs`](http://localhost:8000/docs)
 
 Currently non-existent.
 
+## View Extensions
+
+Packages can contribute their own charts on top of `pypsa.statistics` through the
+`pypsa_app.views` entry point group (or `EXTENSIONS=<import name,...>`). An extension
+module exposes `list_views()`, `load_collection(file_paths)`, `render(view, collection,
+parameters)` and optionally `selections(collection)`; see
+`src/pypsa_app/backend/services/views.py`. The app lists them at `GET /api/v1/views` and
+renders one chart per `POST /api/v1/views/generate` as a background task, like plots.
+[pypsa-at-views](https://github.com/AGGM-AG/pypsa-at-views) is the first extension.
+
 ## Running Tests
 
 **Requirements:** Python ≥ 3.13 + [uv](https://docs.astral.sh/uv/)

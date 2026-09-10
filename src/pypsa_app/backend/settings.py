@@ -121,6 +121,22 @@ class Settings(BaseSettings):
         """True if any auth provider is active."""
         return self.auth_oauth_enabled or self.auth_password_enabled
 
+    # Extensions
+    extensions: str = Field(
+        default="",
+        description=(
+            "Comma-separated import names of view extensions "
+            "(e.g. pypsa_at_views.app). Empty discovers the installed packages "
+            "that register the 'pypsa_app.views' entry point group."
+        ),
+        json_schema_extra={"category": "Extensions"},
+    )
+
+    @property
+    def resolved_extensions(self) -> list[str]:
+        """Parse EXTENSIONS into a list of import names."""
+        return [e.strip() for e in self.extensions.split(",") if e.strip()]
+
     # Networks
     max_upload_size_mb: int = Field(
         default=2000,
