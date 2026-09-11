@@ -10,6 +10,7 @@ from collections.abc import Sequence
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = "0007"
@@ -18,8 +19,24 @@ branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
 
+def _visibility_type() -> sa.types.TypeEngine:
+    """The shared ``visibility`` enum.
+
+    PostgreSQL already has the type (created in 0001 as ``network_visibility``
+    and renamed in 0002), so the column must reuse it: only the dialect-specific
+    ``postgresql.ENUM`` honours ``create_type=False``; a generic ``sa.Enum``
+    emits ``CREATE TYPE`` on table creation and fails with DuplicateObject.
+    SQLite has no named types and renders a VARCHAR with a check constraint.
+    """
+    if op.get_bind().dialect.name == "postgresql":
+        return postgresql.ENUM(
+            "public", "private", name="visibility", create_type=False
+        )
+    return sa.Enum("public", "private", name="visibility", native_enum=True)
+
+
 def upgrade() -> None:
-    visibility = sa.Enum("public", "private", name="visibility", create_type=False)
+    visibility = _visibility_type()
     op.create_table(
         "network_folders",
         sa.Column("id", sa.Uuid(), nullable=False),
